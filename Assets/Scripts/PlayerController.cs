@@ -20,14 +20,18 @@ public class PlayerController : MonoBehaviour
     #region Physics_components
     Rigidbody2D PlayerRB;
     #endregion
-
+    float maxDash = .03f;
     #region Attack_var
     public float Attack_speed = 1;
     public float damage;
     float Attack_timer;
     public float hitboxtiming;
+    public float dashspeed = 2;
     public float endanimationtiming;
     bool is_Attacking;
+    bool dash;
+
+    float dashTimer = 0;
     Vector2 Current_direction;
     #endregion
 
@@ -81,7 +85,19 @@ public class PlayerController : MonoBehaviour
 
         X_input = Input.GetAxisRaw("Horizontal");
         Y_input = Input.GetAxisRaw("Vertical");
-        Move();
+        if(dashTimer >= maxDash)
+			{
+                dash = false;
+                PlayerRB.velocity = Vector2.zero;
+                dashTimer = 0;
+            }
+        if(dash){
+            dashTimer += Time.deltaTime * 3;
+            Dash();
+        }
+        else{
+            Move();
+        }
         if (Input.GetKeyDown(KeyCode.J) && Attack_timer <= 0)
         {
             Attack();
@@ -94,10 +110,22 @@ public class PlayerController : MonoBehaviour
         if (Input.GetKeyDown(KeyCode.L)){
             Interact();
         }
+        if (Input.GetKeyDown(KeyCode.P)){
+            dash = true;
+        }
+    
     }
     #endregion
 
     #region Movement_functions
+    private void Dash()
+    {
+        anim.SetBool("isMoving", true);
+        PlayerRB.velocity = Current_direction * dashspeed;
+        anim.SetFloat("DirX", Current_direction.x);
+        anim.SetFloat("DirY", Current_direction.y);
+
+    }
     private void Move()
     {
         anim.SetBool("isMoving", true);
@@ -120,6 +148,10 @@ public class PlayerController : MonoBehaviour
         {
             PlayerRB.velocity = Vector2.down * movementSpeed; 
             Current_direction = Vector2.down;
+        }
+        else if(dash){
+            Dash();
+            
         }
         else
         {
